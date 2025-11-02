@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Builder</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* A custom font for the entire application */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for the generated resume preview */
+        .resume-preview {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            background-color: #fff;
+        }
+        .resume-preview h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #374151;
+        }
+        .resume-preview h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #111827;
+            margin-top: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+        .resume-preview h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .resume-preview p, .resume-preview li {
+            font-size: 1rem;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
+        /* --- Template-specific styles --- */
+        /* Modern Template */
+        .template-modern h1 { color: #1e40af; }
+        .template-modern h2 { color: #1e40af; border-color: #3b82f6; }
+        .template-modern p, .template-modern li { color: #374151; }
+
+        /* Professional Template */
+        .template-professional h1 { color: #1f2937; }
+        .template-professional h2 { color: #1f2937; border-color: #9ca3af; }
+        .template-professional p, .template-professional li { color: #4b5563; }
+        .template-professional .header-info { display: flex; justify-content: space-between; align-items: center; }
+
+        /* Minimalist Template */
+        .template-minimalist h1 { color: #000; }
+        .template-minimalist h2 { color: #000; border: none; padding-bottom: 0; margin-bottom: 0.5rem; }
+        .template-minimalist p, .template-minimalist li { color: #444; }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-8">
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+        <!-- Input Form -->
+        <div class="lg:w-1/2 p-4 sm:p-6 bg-white rounded-lg shadow-lg">
+            <h1 class="text-2xl sm:text-3xl font-bold text-center mb-6 text-gray-800">AI Resume Builder</h1>
+            
+            <!-- Template Selection -->
+            <div class="mb-6">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Select a Template</h2>
+                <div class="flex flex-wrap gap-2 sm:gap-4">
+                    <button type="button" data-template="modern" class="template-btn bg-blue-600 text-white font-bold py-2 px-3 sm:px-4 rounded-full text-sm sm:text-base">Modern</button>
+                    <button type="button" data-template="professional" class="template-btn bg-gray-400 text-white font-bold py-2 px-3 sm:px-4 rounded-full text-sm sm:text-base">Professional</button>
+                    <button type="button" data-template="minimalist" class="template-btn bg-gray-400 text-white font-bold py-2 px-3 sm:px-4 rounded-full text-sm sm:text-base">Minimalist</button>
+                </div>
+            </div>
+
+            <form id="resume-form" class="space-y-4">
+                <!-- Personal Information -->
+                <div>
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Personal Information</h2>
+                    <input type="text" id="name" placeholder="Full Name" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="email" id="email" placeholder="Email Address" class="w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="tel" id="phone" placeholder="Phone Number" class="w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="linkedin" placeholder="LinkedIn Profile URL (Optional)" class="w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <!-- Summary with AI Integration -->
+                <div>
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Summary</h2>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2">
+                        <input type="text" id="job-role" placeholder="e.g., 'Software Engineer'" class="w-full sm:w-1/2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="button" id="generate-summary-btn" class="w-full sm:w-auto bg-purple-600 text-white font-bold py-2 px-4 rounded-full hover:bg-purple-700 transition duration-300">
+                            <span id="ai-btn-text">Generate with AI</span>
+                            <span id="ai-loading" class="hidden animate-pulse">Generating...</span>
+                        </button>
+                    </div>
+                    <textarea id="summary" placeholder="A brief professional summary..." rows="4" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <!-- Education -->
+                <div>
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Education</h2>
+                    <div id="education-container" class="space-y-2">
+                        <div class="education-entry flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                            <input type="text" placeholder="Degree, e.g. B.S. Computer Science" class="w-full sm:flex-grow px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" placeholder="University" class="w-full sm:flex-grow px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" placeholder="Year" class="w-full sm:w-20 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button type="button" class="remove-entry text-red-500 hover:text-red-700 font-bold text-xl leading-none">&times;</button>
+                        </div>
+                    </div>
+                    <button type="button" id="add-education" class="mt-2 text-blue-600 hover:text-blue-800 font-medium">+ Add Education</button>
+                </div>
+
+                <!-- Work Experience -->
+                <div>
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Work Experience</h2>
+                    <div id="experience-container" class="space-y-2">
+                        <div class="experience-entry space-y-1">
+                            <input type="text" placeholder="Job Title" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" placeholder="Company" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" placeholder="Dates, e.g. 2020 - Present" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-2">
+                                <textarea placeholder="Job responsibilities and achievements (one per line)" rows="3" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                <button type="button" class="generate-responsibilities-btn w-full sm:w-auto bg-purple-600 text-white font-bold py-2 px-4 rounded-full hover:bg-purple-700 transition duration-300">
+                                    <span class="ai-btn-text">Generate with AI</span>
+                                    <span class="ai-loading hidden animate-pulse">Generating...</span>
+                                </button>
+                            </div>
+                            <button type="button" class="remove-entry text-red-500 hover:text-red-700 font-bold">&times; Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" id="add-experience" class="mt-2 text-blue-600 hover:text-blue-800 font-medium">+ Add Experience</button>
+                </div>
+
+                <!-- Skills -->
+                <div>
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Skills</h2>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2">
+                        <textarea id="skills" placeholder="List your skills, separated by commas (e.g., JavaScript, Python, HTML, CSS)" rows="2" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <button type="button" id="generate-skills-btn" class="w-full sm:w-auto bg-purple-600 text-white font-bold py-2 px-4 rounded-full hover:bg-purple-700 transition duration-300">
+                            <span class="ai-btn-text">Generate with AI</span>
+                            <span class="ai-loading hidden animate-pulse">Generating...</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- References -->
+                <div>
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">References</h2>
+                    <textarea id="references" placeholder="List your professional references here, or type 'References available upon request.'" rows="3" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <!-- ATS Compatibility Section -->
+                <div>
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">ATS Compatibility Checker</h2>
+                    <textarea id="job-description" placeholder="Paste the job description here..." rows="6" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                    <button type="button" id="check-ats-btn" class="mt-2 w-full bg-green-600 text-white font-bold py-2 px-6 rounded-full hover:bg-green-700 transition duration-300">
+                        <span id="ats-btn-text">Check Compatibility</span>
+                        <span id="ats-loading" class="hidden animate-pulse">Checking...</span>
+                    </button>
+                    <div id="ats-results" class="mt-4 p-4 border rounded-lg bg-gray-50 hidden">
+                        <!-- ATS results will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap justify-center gap-4 pt-4">
+                    <button type="button" id="download-doc" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300 w-full sm:w-auto">Download as DOC</button>
+                    <button type="button" id="generate-pdf" class="bg-green-600 text-white font-bold py-2 px-6 rounded-full hover:bg-green-700 transition duration-300 w-full sm:w-auto">Download as PDF</button>
+                    <button type="button" id="generate-pdf" class="bg-green-600 text-white font-bold py-2 px-6 rounded-full hover:bg-green-700 transition duration-300 w-full sm:w-auto">Download as HTML</button>
+                    
+                </div>
+            </form>
+        </div>
+
+        <!-- Resume Preview -->
+        <div class="lg:w-1/2 p-4 sm:p-6 bg-white rounded-lg shadow-lg">
+            <h2 class="text-2xl sm:text-xl font-bold text-center mb-6 text-gray-800">Resume Preview</h2>
+            <div id="resume-preview" class="resume-preview template-modern hidden">
+                <!-- Generated resume will be placed here -->
+            </div>
+            <div id="no-preview" class="text-center text-gray-500 italic p-10">
+                Enter your details to see a live preview.
+            </div>
+        </div>
+    </div>
+
+    <!-- JS dependencies for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
